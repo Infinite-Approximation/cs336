@@ -1,0 +1,7 @@
+{
+    "dataset": "/home/jkd/online_course_learning/cs336/assignment1-basics/data/owt_valid.txt",
+    "vocab_size": 32000,
+    "duration_mins": 1.77,
+    "peak_memory_gb": 1.38,
+    "timestamp": "2026-01-23 23:01:53"
+}

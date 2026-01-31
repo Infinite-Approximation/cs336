@@ -1,0 +1,7 @@
+{
+    "dataset": "/root/cs336/assignment1-basics/data/TinyStoriesV2-GPT4-train.txt",
+    "vocab_size": 10000,
+    "duration_mins": 1.1,
+    "peak_memory_gb": 0.2,
+    "timestamp": "2026-01-30 20:21:50"
+}

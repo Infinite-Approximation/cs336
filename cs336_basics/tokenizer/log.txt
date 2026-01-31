@@ -1,0 +1,10 @@
+开始训练 BPE 分词器...
+数据集: /home/jkd/online_course_learning/cs336/assignment1-basics/data/owt_valid.txt
+目标词表大小: 10000
+------------------------------
+训练完成！
+耗时: 15.48 分钟
+内存占用: 峰值约 0.83 GB
+最长的 token ID: 9950, 内容: b'--------------------------------', 长度: 32 字节
+性能指标已保存至: cs336_basics/res/openwebtxt_stats.json
+保存成功：openwebtxt_vocab.json, openwebtxt_merges.txt
