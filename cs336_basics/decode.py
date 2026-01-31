@@ -87,7 +87,7 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
-        "--checkpoint", type=str, default='checkpoints/tinystories_17m_bs_128_lr_6.00e-03/checkpoint_final.pt', help="Path to model checkpoint"
+        "--checkpoint", type=str, default='checkpoints/demo/checkpoint_final.pt', help="Path to model checkpoint"
     )
     parser.add_argument(
         "--prompt", type=str, default="Once upon a time", help="Input prompt text"

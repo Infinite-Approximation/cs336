@@ -8,7 +8,7 @@ from cs336_basics.tokenizer.tokenizer import train_bpe
 def run_experiment():
     # 1. 路径和参数配置
     # 注意：请根据你的实际路径修改数据集位置
-    input_path = "/root/cs336/assignment1-basics/data/TinyStoriesV2-GPT4-train.txt"
+    input_path = "data/TinyStoriesV2-GPT4-train.txt"
     vocab_size = 10000
     special_tokens = ["<|endoftext|>"]
 

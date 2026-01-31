@@ -16,7 +16,6 @@ repr会显示 `'\x00'`，但是printed representation是空的。
 (a) What are some reasons to prefer training our tokenizer on UTF-8 encoded bytes, rather than UTF-16 or UTF-32? It may be helpful to compare the output of these encodings for various input strings.
 Deliverable: A one-to-two sentence response.
 
-![alt text](assets/image.png)
 UTF-8的code unit只有1个字节，但是UTF-16的code unit有2个字节，UTF-32的code unit有4个字节。这就导致
 对于一段话，使用UTF-16编码可能会比UTF-8编码长很多。这也说明UTF-8编码对于句子的压缩程度较高。
 
@@ -137,8 +136,14 @@ output_embed层： 1600 _ 50,257 = 80,411,200
 - down：$(L\times d_{ff})\cdot(d_{ff}\times d)$，FLOPs：$2Ld\,d_{ff}$
 
 所以单层 TransformerBlock 的 matmul FLOPs 为：
-$$6Ld^2 + (2L^2d + 2L^2d) + 2Ld^2 + (2Ld\,d_{ff}+2Ld\,d_{ff}+2Ld\,d_{ff})$$
-$$= 8Ld^2 + 4L^2d + 6Ld\,d_{ff}$$
+
+$$
+6Ld^2 + (2L^2d + 2L^2d) + 2Ld^2 + (2Ld\,d_{ff}+2Ld\,d_{ff}+2Ld\,d_{ff})
+$$
+
+$$
+= 8Ld^2 + 4L^2d + 6Ld\,d_{ff}
+$$
 
 **所有 TransformerBlocks：** $N\,(8Ld^2 + 4L^2d + 6Ld\,d_{ff})$
 
@@ -153,7 +158,10 @@ $$= 8Ld^2 + 4L^2d + 6Ld\,d_{ff}$$
 - lm head：$2LdV = 164,682,137,600$ FLOPs
 
 **总 matmul FLOPs（单次前向传播，batch=1，长度 L）：**
-$$4,348,654,387,200 + 164,682,137,600 = 4,513,336,524,800\ \text{FLOPs} \approx 4.51\times 10^{12}$$
+
+$$
+4,348,654,387,200 + 164,682,137,600 = 4,513,336,524,800\ \text{FLOPs} \approx 4.51\times 10^{12}
+$$
 
 （注：未计入 softmax、mask、RoPE 旋转、RMSNorm、激活/逐元素乘加等非矩阵乘法开销。）
 
@@ -216,7 +224,10 @@ lr = 1e3的时候loss就直接上升了。
 记：V = vocab_size, L = context_length, N = num_layers, d = d_model, H = num_heads, B = batch_size
 
 **Parameters (参数):**
-$$P = 2Vd + N(2d + 16d^2) + d$$
+
+$$
+P = 2Vd + N(2d + 16d^2) + d
+$$
 
 其中 $16d^2 = 4d^2$ (attention) + $12d^2$ (MLP，因为 $d_{ff} = 4d$)
 
@@ -245,36 +256,67 @@ Block 外部组件：
 - 输出嵌入 (logits): $BLV$
 - Cross-entropy softmax: $BLV$
 
-$$A = BN(16Ld + 2HL^2) + BLd + 2BLV$$
+$$
+A = BN(16Ld + 2HL^2) + BLd + 2BLV
+$$
 
 **Gradients (梯度):**
-$$G = P = 2Vd + N(2d + 16d^2) + d$$
+
+$$
+G = P = 2Vd + N(2d + 16d^2) + d
+$$
 
 **Optimizer State (优化器状态):**
-$$O = 2P = 2(2Vd + N(2d + 16d^2) + d)$$
+
+$$
+O = 2P = 2(2Vd + N(2d + 16d^2) + d)
+$$
 
 **总内存 (float32，4 bytes/值):**
-$$\text{Total Memory (bytes)} = 4(P + A + G + O) = 4(4P + A)$$
 
-$$= 4[4(2Vd + N(2d + 16d^2) + d) + BN(16Ld + 2HL^2) + BLd + 2BLV]$$
+$$
+\text{Total Memory (bytes)} = 4(P + A + G + O) = 4(4P + A)
+$$
+
+$$
+= 4[4(2Vd + N(2d + 16d^2) + d) + BN(16Ld + 2HL^2) + BLd + 2BLV]
+$$
 
 简化为：
-$$= 16(2Vd + N(2d + 16d^2) + d) + 4BN(16Ld + 2HL^2) + 4BLd + 8BLV$$
+
+$$
+= 16(2Vd + N(2d + 16d^2) + d) + 4BN(16Ld + 2HL^2) + 4BLd + 8BLV
+$$
 
 **(b) 将你的答案实例化为 GPT-2 XL 形状的模型，以获得仅依赖于 `batch_size` 的表达式。在 80GB 内存内，你能使用的最大批次大小是多少？**
 
 代入 GPT-2 XL 参数：$V = 50257, L = 1024, N = 48, d = 1600, H = 25$
 
 **Parameters:**
-$$P = 2 \times 50257 \times 1600 + 48 \times (2 \times 1600 + 16 \times 1600^2) + 1600$$
-$$= 160,822,400 + 48 \times 40,963,200 + 1,600 = 2,127,057,600$$
+
+$$
+P = 2 \times 50257 \times 1600 + 48 \times (2 \times 1600 + 16 \times 1600^2) + 1600
+$$
+
+$$
+= 160,822,400 + 48 \times 40,963,200 + 1,600 = 2,127,057,600
+$$
 
 内存: $2,127,057,600 \times 4 = 8,508,230,400$ bytes $\approx 8.51$ GB
 
 **Activations (per batch):**
-$$A = B \times 48 \times (16 \times 1024 \times 1600 + 2 \times 25 \times 1024^2) + B \times 1024 \times 1600 + 2B \times 1024 \times 50257$$
-$$= B \times 48 \times 78,643,200 + B \times 1,638,400 + B \times 102,926,336$$
-$$= B \times 3,879,438,336$$
+
+$$
+A = B \times 48 \times (16 \times 1024 \times 1600 + 2 \times 25 \times 1024^2) + B \times 1024 \times 1600 + 2B \times 1024 \times 50257
+$$
+
+$$
+= B \times 48 \times 78,643,200 + B \times 1,638,400 + B \times 102,926,336
+$$
+
+$$
+= B \times 3,879,438,336
+$$
 
 内存: $B \times 3,879,438,336 \times 4 = B \times 15,517,753,344$ bytes $\approx B \times 15.52$ GB
 
@@ -283,11 +325,20 @@ $$= B \times 3,879,438,336$$
 **Optimizer State:** $2 \times 8.51 = 17.02$ GB
 
 **总内存:**
-$$\text{Total} = B \times 15.52 + (8.51 + 8.51 + 17.02) = B \times 15.52 + 34.04 \text{ GB}$$
+
+$$
+\text{Total} = B \times 15.52 + (8.51 + 8.51 + 17.02) = B \times 15.52 + 34.04 \text{ GB}
+$$
 
 **最大 batch size (80GB 限制):**
-$$B \times 15.52 + 34.04 \leq 80$$
-$$B \leq \frac{80 - 34.04}{15.52} = \frac{45.96}{15.52} \approx 2.96$$
+
+$$
+B \times 15.52 + 34.04 \leq 80
+$$
+
+$$
+B \leq \frac{80 - 34.04}{15.52} = \frac{45.96}{15.52} \approx 2.96
+$$
 
 因此 $B_{\max} = 2$
 
@@ -299,14 +350,23 @@ $$B \leq \frac{80 - 34.04}{15.52} = \frac{45.96}{15.52} \approx 2.96$$
 
 **1. 前向传播 (Forward pass):**
 从 3.6(b) 我们知道单样本前向传播的矩阵乘法 FLOPs 为：
-$$F_{\text{forward}} = N(8Ld^2 + 4L^2d + 6Ld \cdot d_{ff}) + 2LdV$$
+
+$$
+F_{\text{forward}} = N(8Ld^2 + 4L^2d + 6Ld \cdot d_{ff}) + 2LdV
+$$
 
 对于 batch size = B：
-$$\text{Forward FLOPs} = B \cdot F_{\text{forward}}$$
+
+$$
+\text{Forward FLOPs} = B \cdot F_{\text{forward}}
+$$
 
 **2. 反向传播 (Backward pass):**
 根据 [Kaplan et al., 2020] 和 [Hoffmann et al., 2022]，反向传播的 FLOPs 是前向传播的两倍：
-$$\text{Backward FLOPs} = 2B \cdot F_{\text{forward}}$$
+
+$$
+\text{Backward FLOPs} = 2B \cdot F_{\text{forward}}
+$$
 
 **3. 优化器更新 (AdamW optimizer):**
 对每个参数 $\theta$，AdamW 需要更新：
@@ -316,15 +376,26 @@ $$\text{Backward FLOPs} = 2B \cdot F_{\text{forward}}$$
 - 偏差修正和参数更新
 
 每个参数约需 13 个浮点运算，总计：
-$$\text{Optimizer FLOPs} = 13P = 13(2Vd + N(2d + 16d^2) + d)$$
+
+$$
+\text{Optimizer FLOPs} = 13P = 13(2Vd + N(2d + 16d^2) + d)
+$$
 
 **总 FLOPs (一步训练):**
-$$\text{Total} = 3B \cdot F_{\text{forward}} + 13P$$
 
-$$= 3B[N(8Ld^2 + 4L^2d + 6Ld \cdot d_{ff}) + 2LdV] + 13(2Vd + N(2d + 16d^2) + d)$$
+$$
+\text{Total} = 3B \cdot F_{\text{forward}} + 13P
+$$
+
+$$
+= 3B[N(8Ld^2 + 4L^2d + 6Ld \cdot d_{ff}) + 2LdV] + 13(2Vd + N(2d + 16d^2) + d)
+$$
 
 因为 $3B \cdot F_{\text{forward}} \gg 13P$（前向+反向的计算量远大于优化器更新），通常可以简化为：
-$$\text{Total} \approx 3B[N(8Ld^2 + 4L^2d + 6Ld \cdot d_{ff}) + 2LdV]$$
+
+$$
+\text{Total} \approx 3B[N(8Ld^2 + 4L^2d + 6Ld \cdot d_{ff}) + 2LdV]
+$$
 
 **交付物：** $\text{FLOPs} = 3B[N(8Ld^2 + 4L^2d + 6Ld_{ff}d) + 2LdV] + 13P$，其中优化器项 $13P$ 通常可忽略。
 
@@ -335,22 +406,90 @@ $$\text{Total} \approx 3B[N(8Ld^2 + 4L^2d + 6Ld \cdot d_{ff}) + 2LdV]$$
 **计算过程：**
 
 从 3.6(b)，单次前向传播（batch=1，L=1024）的 FLOPs：
-$$F_{\text{forward}} = 4.513 \times 10^{12} \text{ FLOPs}$$
+
+$$
+F_{\text{forward}} = 4.513 \times 10^{12} \text{ FLOPs}
+$$
 
 对于 batch*size = 1024，一步训练包含前向和反向传播：
-$$\text{FLOPs per step} = 3 \times B \times F_{\text{forward}} = 3 \times 1024 \times 4.513 \times 10^{12}$$
-$$= 1.386 \times 10^{16} \text{ FLOPs}$$
+
+$$
+\text{FLOPs per step} = 3 \times B \times F_{\text{forward}} = 3 \times 1024 \times 4.513 \times 10^{12}
+$$
+
+$$
+= 1.386 \times 10^{16} \text{ FLOPs}
+$$
 
 训练 400,000 步的总 FLOPs：
-$$\text{Total FLOPs} = 400,000 \times 1.386 \times 10^{16} = 5.544 \times 10^{21} \text{ FLOPs}$$
+
+$$
+\text{Total FLOPs} = 400,000 \times 1.386 \times 10^{16} = 5.544 \times 10^{21} \text{ FLOPs}
+$$
 
 实际吞吐量（50% MFU）：
-$$\text{Actual throughput} = 19.5 \times 10^{12} \times 0.5 = 9.75 \times 10^{12} \text{ FLOP/s}$$
+
+$$
+\text{Actual throughput} = 19.5 \times 10^{12} \times 0.5 = 9.75 \times 10^{12} \text{ FLOP/s}
+$$
 
 训练时间：
-$$\text{Time} = \frac{5.544 \times 10^{21}}{9.75 \times 10^{12}} = 5.686 \times 10^8 \text{ 秒}$$
+
+$$
+\text{Time} = \frac{5.544 \times 10^{21}}{9.75 \times 10^{12}} = 5.686 \times 10^8 \text{ 秒}
+$$
 
 转换为天：
-$$\frac{5.686 \times 10^8}{86,400} \approx 6,581 \text{ 天} \approx 18 \text{ 年}$$
+
+$$
+\frac{5.686 \times 10^8}{86,400} \approx 6,581 \text{ 天} \approx 18 \text{ 年}
+$$
 
 **交付物：** 约 **6,581 天**（约 18 年）。注意：这个结果说明批次大小 1024 对于单个 A100 是不现实的（从 (b) 我们知道最大批次大小只有 2），实际训练需要使用分布式训练或梯度累积。
+
+# 7 Experiments
+
+## 7.2 TinyStories
+### LR
+(a) 
+[here](https://wandb.ai/2310572998jin/transformer-lm?nw=nwuser2310572998jin) 可以看到关于lr和loss之间的关系，只需要看后缀是 _lr\_{lr} 的图即可。
+lr=3e-3的时候，模型的val loss最小，为1.37。
+
+(b)
+lr=1e-2的时候，训练的loss就会上下起伏很大。
+目前认为使得训练发散的lr和最佳lr之间的关系是： 使得训练发散的lr/最佳lr = 3.33，但是为了得到更加精准的答案，需要利用3e-3和1e-2之间的学习率再去训练模型，找到更加精准的学习率。
+
+### Batch Size
+[here](https://wandb.ai/2310572998jin/transformer-lm?nw=nwuser2310572998jin) 可以看到关于batch size和loss之间的关系。只需要看含有bs的图即可。
+一般来说，batch size越大那么训练效果越好。而batch size和lr之间的关系满足Linear scaling rule: lr ∝ batch_size，如果batch_size相对于BS_BASE扩大k倍，那么最佳学习率相对于LR_BASE(在BS_BASE下的最佳学习率)也扩大k倍。
+
+### Generate Text
+**Prompt**:
+Once upon a time
+
+**Generated Text**:
+Once upon a time, there was a strong and independent boy named Tim. He liked to play with his toy pipe. One day, Tim went to the park to play with his pipe.
+
+While playing, a big wind came and took Tim's pipe away. Tim was sad and began to cry. He didn't want to lose his favorite toy. So, he ran to find it.
+
+Tim looked and looked for his pipe. He found it under a big tree. He was so happy! But then, a big bird saw Tim's pipe and wanted it. The bird took Tim's pipe and flew away. Tim cried, and he went home without his favorite toy.
+
+## 7.3 Ablations and architecture modification
+关于消融实验相关的 val loss 可以在 [here](https://wandb.ai/2310572998jin/transformer-lm-ablation?nw=nwuser2310572998jin) 中看到。
+
+### rmsnorm
+- 没有rmsnorm
+
+将模型中的pre rmsnorm去掉，这样模型就没有rmsnorm了。这样在lr=3e-3时训练得到的train loss和val loss很不稳定，甚至有些时候直接让loss=nan了。
+将lr缩小可以让训练更加稳定。
+
+-post rmsnorm
+
+效果相比于pre norm，val loss相差0.01。
+
+### position embeddings
+去掉 RoPE 之后模型训练不稳定。
+
+### SiLU
+使用SiLU和使用SwiGLU差别不大，只是前者效果差一些，最终的val loss差了0.06。
+  

@@ -12,9 +12,7 @@ uv run pytest
 ## Tokenizer
 实验相关代码均在 `cs336_basics/tokenizer` 目录下。
 
-### Download data
-Download the TinyStories data and a subsample of OpenWebText
-
+### 进行tokenizer数据(TinyStories data)的获取
 ``` sh
 mkdir -p data
 cd data
@@ -25,3 +23,31 @@ wget https://huggingface.co/datasets/roneneldan/TinyStories/resolve/main/TinySto
 cd ..
 ```
 
+运行 
+```sh
+python cs336_basics/tokenizer/run_tinystories_experiments.py
+```
+训练结束会得到两个文件，一个是 `cs336_basics/tokenizer/res/openwebtxt_vocab.json`，另一个是 `cs336_basics/tokenizer/res/tinystories_merges.txt`。
+
+## model
+### 获取训练和评估数据
+运行
+```sh
+./cs336_basics/train_script/data_prepare.sh
+```
+我们会得到训练数据 `data/TinyStoriesV2-GPT4-train_tokens.npy`，
+以及评估数据 `data/TinyStoriesV2-GPT4-valid_tokens.npy`
+
+### 开始训练
+运行
+```sh
+./cs336_basics/train_script/train_demo.sh
+```
+我们可以在cpu上训练一个约9.31M的模型。
+
+### 测试效果
+运行
+```sh
+python cs336_basics/decode.py
+```
+我们就可以得到我们的LLM输出的结果了！

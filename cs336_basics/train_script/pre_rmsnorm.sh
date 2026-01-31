@@ -82,7 +82,7 @@ for LR in "${LEARNING_RATES[@]}"; do
         $( [ "$USE_WANDB" = true ] && echo "--use_wandb" ) \
         --wandb_project $WANDB_PROJECT \
         --wandb_run_name $WANDB_RUN_NAME \
-        --no_rmsnorm
+        --no_pre_rmsnorm
     
     echo "Finished training with learning rate: $LR"
     echo ""
