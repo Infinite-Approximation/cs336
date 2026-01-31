@@ -1,34 +1,16 @@
 # CS336 Spring 2025 Assignment 1: Basics
 
-For a full description of the assignment, see the assignment handout at
-[cs336_spring2025_assignment1_basics.pdf](./cs336_spring2025_assignment1_basics.pdf)
-
-If you see any issues with the assignment handout or code, please feel free to
-raise a GitHub issue or open a pull request with a fix.
-
-## Setup
-
-### Environment
-We manage our environments with `uv` to ensure reproducibility, portability, and ease of use.
-Install `uv` [here](https://github.com/astral-sh/uv) (recommended), or run `pip install uv`/`brew install uv`.
-We recommend reading a bit about managing projects in `uv` [here](https://docs.astral.sh/uv/guides/projects/#managing-dependencies) (you will not regret it!).
-
-You can now run any code in the repo using
-```sh
-uv run <python_file_path>
-```
-and the environment will be automatically solved and activated when necessary.
-
-### Run unit tests
-
+## 检查是否通过全部测试
 
 ```sh
 uv run pytest
 ```
 
-Initially, all tests should fail with `NotImplementedError`s.
-To connect your implementation to the tests, complete the
-functions in [./tests/adapters.py](./tests/adapters.py).
+这个命令会自动安装对应的环境，然后进行测试。
+可能会存在train_bpe_test这个样例没通过，这是因为如果你的cpu核数过大，那么创建多进程的时候会花费很多时间，经测试，128核的时候会不通过该测试，16核可以通过测试。如果无法通过测试，请修改 `/root/cs336/assignment1-basics/cs336_basics/tokenizer/tokenizer.py` 中的 `train_bpe` 函数，调整对应的核数。
+
+## Tokenizer
+实验相关代码均在 `cs336_basics/tokenizer` 目录下。
 
 ### Download data
 Download the TinyStories data and a subsample of OpenWebText
@@ -39,11 +21,6 @@ cd data
 
 wget https://huggingface.co/datasets/roneneldan/TinyStories/resolve/main/TinyStoriesV2-GPT4-train.txt
 wget https://huggingface.co/datasets/roneneldan/TinyStories/resolve/main/TinyStoriesV2-GPT4-valid.txt
-
-wget https://huggingface.co/datasets/stanford-cs336/owt-sample/resolve/main/owt_train.txt.gz
-gunzip owt_train.txt.gz
-wget https://huggingface.co/datasets/stanford-cs336/owt-sample/resolve/main/owt_valid.txt.gz
-gunzip owt_valid.txt.gz
 
 cd ..
 ```
